@@ -9,6 +9,18 @@ let
   pname = "hytale-launcher";
   downloadUrl = "https://launcher.hytale.com/builds/release/linux/amd64/hytale-launcher-${version}.zip";
 
+  hytaleIcon = pkgs.fetchurl {
+    url = "https://accounts.hytale.com/images/logo-h.webp";
+    hash = "sha256-VH5QsLTWl0TOj4aHwGYLonrJI27PlQkrnbTBNuzACWk=";
+  };
+
+  hytaleIconPng = pkgs.runCommand "hytale-launcher-icon" {
+    nativeBuildInputs = [ pkgs.imagemagick ];
+  } ''
+    mkdir -p $out
+    convert ${hytaleIcon} -thumbnail 256x256 -alpha on -background none -flatten $out/hytale-launcher.png
+  '';
+
   # Unwrapped derivation - extracts and patches the binary
   hytale-launcher-unwrapped = pkgs.stdenv.mkDerivation {
     pname = "${pname}-unwrapped";
@@ -205,6 +217,9 @@ Keywords=hytale;game;launcher;hypixel;
 StartupWMClass=com.hypixel.HytaleLauncher
 EOF
 
+      # Install icon
+      mkdir -p $out/share/icons/hicolor/256x256/apps
+      cp ${hytaleIconPng}/hytale-launcher.png $out/share/icons/hicolor/256x256/apps/hytale-launcher.png
     '';
 
     meta = with pkgs.lib; {
